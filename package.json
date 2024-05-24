@@ -10,12 +10,33 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@aws-sdk/client-sso-oidc": "3.575.0",
+    "@aws-sdk/types": "3.575.0",
     "@mdi/font": "^7.4.47",
+    "@pinia/nuxt": "^0.5.1",
+    "@unocss/reset": "0.60.2",
+    "aws-amplify": "^6.3.1",
+    "floating-vue": "5.2.2",
     "nuxt": "^3.11.2",
+    "pinia": "^2.1.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "terser": "5.31.0",
+    "unocss": "0.60.2",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.0.2",
+    "@aws-amplify/backend-cli": "^1.0.3",
+    "@aws-sdk/client-cognito-identity-provider": "^3.577.0",
+    "@types/aws-lambda": "^8.10.138",
+    "aws-cdk": "^2.141.0",
+    "aws-cdk-lib": "^2.141.0",
+    "constructs": "^10.3.0",
+    "esbuild": "^0.21.2",
+    "tsx": "^4.10.2",
+    "typescript": "^5.4.5",
     "vite-plugin-vuetify": "^2.0.3",
     "vuetify": "^3.6.5"
   }
