@@ -5,6 +5,8 @@ import OutsideAppBar from "~/components/OutsideAppBar.vue";
 <template>
   <v-app>
     <OutsideAppBar></OutsideAppBar>
-    <slot />
+    <v-main>
+      <slot />
+    </v-main>
   </v-app>
 </template>

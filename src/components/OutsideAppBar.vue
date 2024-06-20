@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-flex">
     <v-app-bar color="primary" density="compact">
       <template #prepend>
         <v-app-bar-nav-icon
@@ -91,6 +91,10 @@ const auth = useAuthStore(),
   _items = [
     { title: "Home", value: "/", groups: [] },
     { title: "Auth", value: "/auth", groups: [] },
+    { title: "Company Home", value: "/companyHome", groups: [] },
+    { title: "Manage Units", value: "/manageUnits", groups: [] },
+    { title: "Tenant Summary", value: "/tenantSummary", groups: [] },
+    { title: "Lease Summary", value: "/lease", groups: [] },
     // { title: "Leases", value: "/employee/leases", groups: ["employee"] },
     // { title: "Tenents", value: "/employee/tenents", groups: ["employee"] },
     // { title: "Units", value: "/employee/units", groups: ["employee"] },

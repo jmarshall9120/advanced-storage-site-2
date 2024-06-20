@@ -1,0 +1,59 @@
+<template>
+  <v-container>
+    <v-row>
+      <v-col>
+        <!-- name -->
+        <v-card>
+          <v-card-title>{{ dataStore.tenant_name }}</v-card-title>
+          <v-card-text>{{ dataStore.tenant_profile_view }}</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-card>
+          <v-card-title>Leases</v-card-title>
+          <v-card-text>{{ dataStore.tenant_leases_view }}</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-card>
+          <v-card-title>Transactions</v-card-title>
+          <v-card-text>{{ dataStore.tenant_transactions_view }}</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from "vue";
+import { useDataStore } from "~/stores/data";
+
+const dataStore = useDataStore();
+
+// const tenant_name = computed((): string => {
+//   console.log("TRYING TO GET TENANT NAME");
+//   if (!dataStore.tenant) {
+//     console.log("Returning Null");
+//     return "Loading...";
+//   }
+//   console.log("Returning Full");
+//   console.log(dataStore.tenant.is_business);
+//   const return_val = dataStore.tenant.is_business
+//     ? dataStore.tenant.business_name
+//     : `${dataStore.tenant.first_name}  ${dataStore.tenant.last_name}`;
+//   console.log(return_val);
+//   console.log("////////////////////////////////////");
+//   if (!return_val) {
+//     throw Error("Why is return val broken :(");
+//   }
+//   return return_val;
+// });
+
+onMounted(async () => {
+  await dataStore.loadCompanies();
+  await dataStore.load_tenants_by_company();
+});
+</script>

@@ -2,6 +2,7 @@ import { type Ref, ref, computed } from "vue";
 import { defineStore } from "pinia";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import {type AuthUser, type AuthSession, AuthError} from 'aws-amplify/auth'
+import { auth } from "~~/amplify/auth/resource";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref({}),
@@ -38,7 +39,7 @@ export const useAuthStore = defineStore("auth", () => {
   })
 
   const getGroups = computed(() => {
-    console.log("auth_store.getEmail", cognito_user.value.signInUserSession);
+    // console.log("auth_store.getEmail", cognito_user.value.signInUserSession);
     return cognito_user.value.signInUserSession
       ? cognito_user.value.signInUserSession.idToken.payload["cognito:groups"]
       : "Not Auth-ed";
@@ -65,12 +66,15 @@ export const useAuthStore = defineStore("auth", () => {
         throw new Error(`${e}`);
       }
     }
+    // if (!userId.value){
+    //   return
+    // }
 
     // even if login failed we should get a session
     // as a guess.
     try {
       authSession = await fetchAuthSession();
-      console.log('auth session request result: ', authSession)
+      // console.log('auth session request result: ', authSession)
       credentials.value = authSession.credentials;
       identityId.value = authSession.identityId;
       tokens.value = authSession.tokens;

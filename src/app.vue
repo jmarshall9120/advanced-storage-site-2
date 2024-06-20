@@ -15,7 +15,8 @@ import { useDataStore } from "~/stores/data";
 const auth_store = useAuthStore();
 const store = useDataStore();
 onMounted(async () => {
+  console.log("App Mounted called");
   await auth_store.setUser();
-  await store.getUsers();
+  await store.getUser(auth_store.userId);
 });
 </script>
