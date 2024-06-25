@@ -33,24 +33,7 @@ import { useDataStore } from "~/stores/data";
 
 const dataStore = useDataStore();
 
-// const tenant_name = computed((): string => {
-//   console.log("TRYING TO GET TENANT NAME");
-//   if (!dataStore.tenant) {
-//     console.log("Returning Null");
-//     return "Loading...";
-//   }
-//   console.log("Returning Full");
-//   console.log(dataStore.tenant.is_business);
-//   const return_val = dataStore.tenant.is_business
-//     ? dataStore.tenant.business_name
-//     : `${dataStore.tenant.first_name}  ${dataStore.tenant.last_name}`;
-//   console.log(return_val);
-//   console.log("////////////////////////////////////");
-//   if (!return_val) {
-//     throw Error("Why is return val broken :(");
-//   }
-//   return return_val;
-// });
+
 
 onMounted(async () => {
   await dataStore.loadCompanies();

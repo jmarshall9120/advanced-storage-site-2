@@ -10,6 +10,6 @@ import { createVuetify } from "vuetify";
 Amplify.configure(outputs);
 
 export default defineNuxtPlugin((app) => {
-  const vuetify = createVuetify({});
+  const vuetify = createVuetify({ ssr: true});
   app.vueApp.use(vuetify);
 });

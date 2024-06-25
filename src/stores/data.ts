@@ -1,10 +1,19 @@
 import { type Ref, ref, computed, watch } from "vue";
 import { defineStore } from "pinia";
-import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
-import {type AuthUser, type AuthSession, AuthError} from 'aws-amplify/auth'
+// import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
+// import {type AuthUser, type AuthSession, AuthError} from 'aws-amplify/auth'
 import {generateClient} from 'aws-amplify/data'
 import type {Schema} from '~/../amplify/data/resource'
-import type {Lease as LocalLease, Unit as LocalUnit, LeaseUnit as LocalLeaseUnit} from '~/types/index'
+import type {
+  Lease, 
+  Unit, 
+  LeaseUnit, 
+  User, 
+  Authorization, 
+  Company, 
+  Tenant, 
+  Transaction
+} from '~/types/index'
 
 export const useDataStore = defineStore("data", () => {
 
@@ -36,8 +45,8 @@ export const useDataStore = defineStore("data", () => {
 
   // USER PROFILE
   /////////////////////////////////////////////////////////////////////
-  type User = Schema['User']['type']
-  type Authorization = Schema['Authorization']['type']
+  // type User = Schema['User']['type']
+  // type Authorization = Schema['Authorization']['type']
   const user_profile = ref<User | object>({})
   const authorizations = ref<Array<Authorization>>([])
 
@@ -51,17 +60,17 @@ export const useDataStore = defineStore("data", () => {
     }, {
       authMode: 'userPool'
     });
-    console.log('Get user request completed')
-    console.log(profile)
-    console.log(errors)
+    // console.log('Get user request completed')
+    // console.log(profile)
+    // console.log(errors)
     if (errors){
       throw new Error(errors.toString());
     } else if (!profile){
       throw new Error('Data not returned from getUser');
     }
-    console.log('Starting get authroizations...')
+    // console.log('Starting get authroizations...')
     let {data: _authorizations } = await profile.authorizations();
-    console.log('Authorizations type check: ')
+    // console.log('Authorizations type check: ')
     user_profile.value = profile;
 
     authorizations.value = _authorizations as unknown as Array<Authorization>;
@@ -69,7 +78,7 @@ export const useDataStore = defineStore("data", () => {
 
   //COMPANY DATA
   ///////////////////////////////////////////////////////////////
-  type Company = Schema['Company']['type']
+  // type Company = Schema['Company']['type']
   // const company = ref<Company>();
   const companies = ref<Array<Company>>([]);
   const company_idx = ref<number>(0);
@@ -78,7 +87,7 @@ export const useDataStore = defineStore("data", () => {
   })
 
   async function _fetchCompany(
-    _authorizations:Array<Schema['Authorization']['type']>
+    _authorizations:Array<Authorization>
   ): Promise<void> {
     const company_ids = _authorizations.filter((_) => {
       return _.claim.split('#').length == 2
@@ -116,15 +125,15 @@ export const useDataStore = defineStore("data", () => {
 
   // TENANTS DATA
   ///////////////////////////////////////////////////////////////
-  type Tenant = Schema['Tenant']['type']
-  const tenants = ref<Array<Tenant>>([])
+  // type Tenant = Schema['Tenant']['type']
+  const tenants = ref<Array<FullTenant>>([])
   const _tenant_idx = ref<number>(0)
   const tenant = computed(()=>{
     return tenants.value ? tenants.value[_tenant_idx.value] : undefined
   })
 
   function setTenantBy_id(id:string){
-    const _filter_result = tenants.value.findIndex((_:Tenant)=>{
+    const _filter_result = tenants.value.findIndex((_:FullTenant)=>{
       return _.id === id
     })
     if (_filter_result !== -1){
@@ -133,7 +142,7 @@ export const useDataStore = defineStore("data", () => {
   }
 
   function getTenantBy_id_by_last_name(last_name:string){
-    const _filter_result = tenants.value.filter((_:Tenant)=>{
+    const _filter_result = tenants.value.filter((_:FullTenant)=>{
       return _.last_name == last_name
     })
     return _filter_result
@@ -150,6 +159,10 @@ export const useDataStore = defineStore("data", () => {
     return <string>return_val;
   });
 
+  interface FullTenant extends Tenant {
+    leases: Array<Lease>,
+    transactions: Array<Transaction>
+  }
   async function _fetchTenantsByCompany(
     company:Company
   ) : Promise<void> {
@@ -167,7 +180,7 @@ export const useDataStore = defineStore("data", () => {
       },
       authMode: 'userPool'
     })
-    tenants.value = _tenants as unknown as Array<Tenant>
+    tenants.value = _tenants as unknown as Array<FullTenant>
   }
 
   async function load_tenants_by_company(
@@ -195,13 +208,13 @@ export const useDataStore = defineStore("data", () => {
     last_name: Nullable<string>,
     transactions: {[key:string]: AccountSummary}
   }
-  type Transaction = Schema['Transaction']['type']
+  // type Transaction = Schema['Transaction']['type']
 
   // Helper for datetime conversion
-  function convertUTCDateToLocalDate(date:Date) : Date {
-    // return new Date(date.getTime() - date.getTimezoneOffset()*60*1000);   
-    return new Date(date.getTime() + dstOffsetAtDate(date))
-  }
+  // function convertUTCDateToLocalDate(date:Date) : Date {
+  //   // return new Date(date.getTime() - date.getTimezoneOffset()*60*1000);   
+  //   return new Date(date.getTime() + dstOffsetAtDate(date))
+  // }
   const tenants_with_balance = computed(() : Array<TenantsMonthlyBalance> =>{
     if (!tenants.value){
       return []
@@ -308,7 +321,7 @@ export const useDataStore = defineStore("data", () => {
       },
       authMode: 'userPool'
     })
-    tenants.value = _tenants as unknown as Array<Tenant>
+    tenants.value = _tenants as unknown as Tenant
   }
 
   async function leases_by_tenant(
@@ -322,7 +335,7 @@ export const useDataStore = defineStore("data", () => {
     }
   }
 
-  type Lease = Schema['Lease']['type'];
+  // type Lease = Schema['Lease']['type'];
   const lease_idx = ref<number>(0);
 
  
@@ -352,13 +365,13 @@ export const useDataStore = defineStore("data", () => {
     return _transactions;
   })
 
-  interface LeaseView extends LocalLease{
+  interface LeaseView extends Lease{
     id: string,
     start_date: string,
     close_date: string | null | undefined,
     price: number | null | undefined,
     is_active: boolean | null | undefined,
-    units: Array<LocalLeaseUnit>,
+    units: Array<LeaseUnit>,
     tenant_id: string,
     // tenant: Tenant | Function | null | undefined,
     company_id: string,
@@ -366,7 +379,7 @@ export const useDataStore = defineStore("data", () => {
   }
   const lease_view = computed(() : LeaseView | undefined => {
     if (!tenant.value){return undefined}
-    const _leases = tenant.value.leases as unknown as Array<LocalLease>
+    const _leases = tenant.value.leases as unknown as Array<Lease>
     return _leases[lease_idx.value] as LeaseView
   })
 

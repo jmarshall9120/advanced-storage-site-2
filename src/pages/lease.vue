@@ -29,6 +29,14 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <v-card>
+          <v-card-title>UnMatchedTransactions</v-card-title>
+          <v-card-text>{{ potential_matching_transactions }}</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 <script setup lang="ts">
@@ -88,13 +96,34 @@ const attributed_transactions = computed(() : Array<TransactionAttribution> | st
       const attrs = curr.transaction_attributions.filter((_:TransactionAttribution) => {
         return (
           _.attribution_type === "LEASE" &&
-          _.attribution_id === dataStore.lease_view.id
+          _.attribution_id === dataStore.lease_view?.id
         );
       });
-      console.log("ATTRS: ", attrs);
+      // console.log("ATTRS: ", attrs);
       return prev.concat(attrs);
     }, []);
 });
+
+const potential_matching_transactions = computed(() => {
+  if (!dataStore.tenant || !dataStore.lease_view) {
+    return 'Loading...'
+  } else if (!dataStore.tenant.transactions){
+    return []
+  }
+  const _unit_prices = dataStore.lease_view.units.map((_:LeaseUnit) => {return Math.abs(_.price)})
+  const _attributions : Array<TransactionAttribution> = dataStore.tenant.transactions.reduce((
+    prev:Array<TransactionAttribution>,
+    curr:Transaction
+  ) : Array<TransactionAttribution> => {
+    return prev.concat(curr.transaction_attributions.filter((_:TransactionAttribution) => {
+      return !_.attribution_id && (
+        Math.abs(_.amount) == Math.abs(dataStore.lease_view?.price as unknown as number) || // ts doesn't catch the path above that checks for null
+        _unit_prices.includes(Math.abs(_.amount))
+    )
+    }))
+  },[])
+  return _attributions
+})
 
 onMounted(async () => {
   await dataStore.loadCompanies();
@@ -108,7 +137,11 @@ onMounted(async () => {
     console.log('ID to set!!!: ', _tenant_to_set)
     dataStore.setTenantBy_id(_tenant_to_set[0].id);
   };
-  watch_for_dependancy_loaded(() => dataStore.tenant, fn);
+  if (!dataStore.tenant){
+    watch_for_dependancy_loaded(() => dataStore.tenant, fn);
+  } else {
+    fn('')
+  }
   // const _tenant_to_set = dataStore.getTenantBy_id_by_last_name("Carter");
   // console.log("CHECKING TENANT GOT");
   // console.log(_tenant_to_set);

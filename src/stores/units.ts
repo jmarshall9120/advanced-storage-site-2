@@ -4,6 +4,39 @@ import {defineStore} from 'pinia'
 import {generateClient} from 'aws-amplify/data'
 import {type Schema} from '~/../amplify/data/resource'
 import {useDataStore} from '~/stores/data'
+import type {Unit, Company, Location, Building} from '~/types/index'
+
+export interface LocationView {
+  id: String,
+  name: String,
+  physical_address_1: String,
+  physical_address_2: String,
+  physical_city: String,
+  physical_state: String,
+  physical_postal_code: String,
+  physical_country: String
+  company_id: String,
+  buildings: Array<Building>
+}
+
+export type UnitFlattened = {
+  id: string,
+  name: string,
+  width: number,
+  depth: number,
+  height: number,
+  basis_price: number,
+  uom: string,
+  currency: string,
+  is_available: boolean,
+  building_name: string,
+  location_name: string,
+  building_id: string,
+  location_id: string,
+  company_id: string,
+  modifiedAt: string,
+  createdAt: string
+}
 
 export const useUnitsStore = defineStore('units', () => {
 
@@ -13,7 +46,7 @@ export const useUnitsStore = defineStore('units', () => {
 
   // UNITS 
   /////////////////////////////////////////////////////////////////////////
-  type Unit = Schema['Unit']['type']
+  // type Unit = Schema['Unit']['type']
   const units = ref<Array<Unit>>([])
   async function _fetch_units() : Promise<Array<Unit>> {
     const {data: _units, errors} = await client.models.Unit.list({
@@ -22,7 +55,7 @@ export const useUnitsStore = defineStore('units', () => {
     if (errors){
       throw new Error(errors.toString())
     }
-    return _units
+    return _units as unknown as Array<Unit>
   }
 
   async function load_units(force_refresh:Boolean=false) : Promise<void> {
@@ -32,7 +65,7 @@ export const useUnitsStore = defineStore('units', () => {
 
   // Locations
   /////////////////////////////////////////////////////////////////////////
-  type Location = Schema['Location']['type']
+  // type Location = Schema['Location']['type']
   const locations = ref<Array<Location>>([])
   const location_idx = ref<number>(0)
 
@@ -64,17 +97,7 @@ export const useUnitsStore = defineStore('units', () => {
     locations.value = _locations;
   }
 
-  type LocationView = {
-    id: String,
-    name: String,
-    physical_address_1: String,
-    physical_address_2: String,
-    physical_city: String,
-    physical_state: String,
-    physical_postal_code: String,
-    physical_country: String
-    company_id: String
-  }
+  
   const locations_view = computed(()=>{
     return locations.value.reduce((
         prev: {[key: string]: LocationView}, 
@@ -89,31 +112,19 @@ export const useUnitsStore = defineStore('units', () => {
         physical_state: <String>curr.physical_state,
         physical_postal_code: <String>curr.physical_postal_code,
         physical_country: <String>curr.physical_country,
-        company_id: <String>curr.company_id
+        company_id: <String>curr.company_id,
+        buildings: <Array<Building>>curr.buildings
       }
       return prev
     }, {})
   })
 
-  type UnitFlattened = {
-    id: string,
-    name: string,
-    width: number,
-    depth: number,
-    height: number,
-    basis_price: number,
-    uom: string,
-    currency: string,
-    is_available: boolean,
-    building_name: string,
-    location_name: string,
-    building_id: string,
-    location_id: string,
-    company_id: string,
-    modifiedAt: string,
-    createdAt: string
-  }
-  type Building = Schema['Building']['type']
+  // const buildings_view = computed(()=>{
+  //   return locations.value
+  // })
+
+
+  // type Building = Schema['Building']['type']
   const isNumeric = (num:String) : Boolean => /^-?[0-9]+(?:\.[0-9]+)?$/.test(num+'');
 
   const units_flattened_by_location_view = computed(()=>{
